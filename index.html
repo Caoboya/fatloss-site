@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>减脂热量与三大营养素计算器（可保存档案）</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --panel-2: #1f2937;
+      --line: #334155;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-2: #22c55e;
+      --danger: #fb7185;
+      --warning: #f59e0b;
+      --shadow: 0 18px 40px rgba(0,0,0,.28);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(180deg, #020617 0%, #0f172a 100%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .wrap {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 32px 18px 48px;
+    }
+
+    .hero {
+      margin-bottom: 24px;
+      padding: 28px;
+      border: 1px solid rgba(56,189,248,.18);
+      background: linear-gradient(135deg, rgba(56,189,248,.14), rgba(34,197,94,.10));
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(28px, 4vw, 40px);
+      line-height: 1.15;
+    }
+
+    .sub {
+      margin: 0;
+      color: #cbd5e1;
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.18fr .82fr;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .card {
+      background: rgba(17,24,39,.9);
+      border: 1px solid rgba(148,163,184,.16);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .card-head {
+      padding: 18px 20px;
+      border-bottom: 1px solid rgba(148,163,184,.12);
+      background: rgba(255,255,255,.02);
+    }
+
+    .card-head h2 {
+      margin: 0 0 6px;
+      font-size: 19px;
+    }
+
+    .card-head p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .card-body { padding: 20px; }
+
+    .profile-panel {
+      margin-bottom: 18px;
+      padding: 16px;
+      border-radius: 16px;
+      border: 1px solid rgba(56,189,248,.15);
+      background: linear-gradient(180deg, rgba(56,189,248,.06), rgba(255,255,255,.02));
+    }
+
+    .profile-grid {
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 14px;
+      align-items: end;
+    }
+
+    .mini-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .current-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(15,23,42,.75);
+      border: 1px solid rgba(148,163,184,.16);
+      color: #dbeafe;
+      font-size: 13px;
+    }
+
+    .saved-list {
+      margin-top: 14px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .saved-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(15,23,42,.72);
+      border: 1px solid rgba(148,163,184,.14);
+    }
+
+    .saved-item-main {
+      min-width: 0;
+    }
+
+    .saved-item-name {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      word-break: break-all;
+    }
+
+    .saved-item-meta {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .saved-item-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .small-btn {
+      padding: 9px 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .ghost {
+      background: #101a2a;
+      color: #dbeafe;
+      border: 1px solid rgba(148,163,184,.18);
+    }
+
+    .danger {
+      background: rgba(251,113,133,.12);
+      color: #fecdd3;
+      border: 1px solid rgba(251,113,133,.18);
+    }
+
+    .empty-state {
+      margin-top: 12px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px dashed rgba(148,163,184,.2);
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .full { grid-column: 1 / -1; }
+
+    label {
+      display: block;
+      margin-bottom: 7px;
+      color: #dbeafe;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .hint {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    input, select {
+      width: 100%;
+      appearance: none;
+      border: 1px solid var(--line);
+      background: #0b1220;
+      color: var(--text);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 15px;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s, transform .05s;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(56,189,248,.12);
+    }
+
+    .btns {
+      display: flex;
+      gap: 12px;
+      margin-top: 18px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 13px 18px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform .05s, opacity .2s, filter .2s;
+    }
+
+    button:active { transform: translateY(1px); }
+
+    .primary {
+      background: linear-gradient(135deg, var(--accent), #2563eb);
+      color: white;
+    }
+
+    .secondary {
+      background: #182233;
+      color: #dbeafe;
+      border: 1px solid rgba(148,163,184,.2);
+    }
+
+    .results {
+      display: grid;
+      gap: 14px;
+    }
+
+    .metric {
+      border: 1px solid rgba(148,163,184,.14);
+      border-radius: 16px;
+      padding: 16px;
+      background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
+    }
+
+    .metric .k {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .metric .v {
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: .2px;
+    }
+
+    .metric .u {
+      font-size: 14px;
+      color: #cbd5e1;
+      margin-left: 4px;
+      font-weight: 600;
+    }
+
+    .macro-box {
+      margin-top: 8px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .macro-row {
+      padding: 14px 16px;
+      border-radius: 14px;
+      background: rgba(15,23,42,.72);
+      border: 1px solid rgba(148,163,184,.14);
+    }
+
+    .macro-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+
+    .macro-name { font-weight: 700; }
+    .macro-val { color: #e2e8f0; font-weight: 700; }
+
+    .bar {
+      height: 10px;
+      border-radius: 999px;
+      background: #0b1220;
+      overflow: hidden;
+      border: 1px solid rgba(148,163,184,.14);
+    }
+
+    .fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #38bdf8, #22c55e);
+      width: 0%;
+      transition: width .35s ease;
+    }
+
+    .formula, .warn, .toast {
+      margin-top: 14px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      line-height: 1.65;
+      font-size: 13px;
+    }
+
+    .formula {
+      background: rgba(56,189,248,.08);
+      border: 1px solid rgba(56,189,248,.16);
+      color: #dbeafe;
+    }
+
+    .warn {
+      background: rgba(251,113,133,.08);
+      border: 1px solid rgba(251,113,133,.18);
+      color: #fecdd3;
+      display: none;
+    }
+
+    .toast {
+      display: none;
+      background: rgba(34,197,94,.08);
+      border: 1px solid rgba(34,197,94,.18);
+      color: #dcfce7;
+    }
+
+    .foot {
+      margin-top: 22px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    @media (max-width: 920px) {
+      .grid { grid-template-columns: 1fr; }
+      .profile-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 640px) {
+      .form-grid { grid-template-columns: 1fr; }
+      .wrap { padding: 18px 12px 32px; }
+      .hero, .card-body, .card-head { padding-left: 16px; padding-right: 16px; }
+      .metric .v { font-size: 24px; }
+      .saved-item { flex-direction: column; align-items: stretch; }
+      .saved-item-actions { justify-content: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>减脂热量与三大营养素计算器</h1>
+      <p class="sub">
+        现在支持按名字保存档案。你可以把一组数据保存成“曹”“小李”之类的名字，之后随时载入、修改，再覆盖更新保存。
+      </p>
+    </section>
+
+    <div class="grid">
+      <section class="card">
+        <div class="card-head">
+          <h2>输入参数与档案管理</h2>
+          <p>基础代谢采用 Mifflin-St Jeor 公式。保存功能基于浏览器本地存储，同一浏览器下可反复载入和更新。</p>
+        </div>
+        <div class="card-body">
+          <div class="profile-panel">
+            <div class="profile-grid">
+              <div>
+                <label for="profileName">档案名称</label>
+                <input id="profileName" type="text" maxlength="30" placeholder="例如：曹" />
+                <span class="hint">输入名字后可保存当前数据。若名称已存在，会更新这份档案。</span>
+              </div>
+              <div>
+                <label for="profilePicker">已保存档案</label>
+                <select id="profilePicker">
+                  <option value="">请选择已保存档案</option>
+                </select>
+                <span class="hint">选择后可一键载入对应数据。</span>
+              </div>
+            </div>
+
+            <div class="mini-actions">
+              <button class="primary small-btn" id="saveProfileBtn" type="button">保存当前档案</button>
+              <button class="secondary small-btn" id="loadProfileBtn" type="button">载入所选档案</button>
+              <button class="ghost small-btn" id="newProfileBtn" type="button">新建空白档案</button>
+              <button class="danger small-btn" id="deleteProfileBtn" type="button">删除所选档案</button>
+            </div>
+
+            <div class="current-badge" id="currentProfileBadge">当前未绑定任何已保存档案</div>
+            <div class="toast" id="toastBox"></div>
+
+            <div class="saved-list" id="savedList"></div>
+            <div class="empty-state" id="emptyState">当前还没有保存任何档案。你可以先填好数据，再输入一个名字进行保存。</div>
+          </div>
+
+          <div class="form-grid">
+            <div>
+              <label for="gender">性别</label>
+              <select id="gender">
+                <option value="male">男性</option>
+                <option value="female">女性</option>
+              </select>
+            </div>
+            <div>
+              <label for="age">年龄</label>
+              <input id="age" type="number" min="10" max="100" step="1" value="25" />
+            </div>
+
+            <div>
+              <label for="height">身高（cm）</label>
+              <input id="height" type="number" min="100" max="250" step="0.1" value="175" />
+            </div>
+            <div>
+              <label for="weight">体重（kg）</label>
+              <input id="weight" type="number" min="25" max="300" step="0.1" value="70" />
+            </div>
+
+            <div class="full">
+              <label for="activity">运动系数</label>
+              <select id="activity">
+                <option value="1.2">1.20 - 久坐，几乎不运动</option>
+                <option value="1.375">1.375 - 轻度活动，每周运动 1-3 次</option>
+                <option value="1.55" selected>1.55 - 中度活动，每周运动 3-5 次</option>
+                <option value="1.725">1.725 - 高度活动，每周运动 6-7 次</option>
+                <option value="1.9">1.90 - 极高活动，体力劳动或高强度训练</option>
+              </select>
+            </div>
+
+            <div>
+              <label for="deficit">目标热量缺口（kcal）</label>
+              <input id="deficit" type="number" min="0" max="2000" step="10" value="500" />
+              <span class="hint">常见减脂缺口可先从 300-500 kcal 开始。</span>
+            </div>
+
+            <div>
+              <label for="proteinPerKg">蛋白质（g / kg 体重）</label>
+              <input id="proteinPerKg" type="number" min="1.0" max="3.5" step="0.1" value="2.0" />
+              <span class="hint">减脂期常见建议区间约 1.6-2.2 g/kg。</span>
+            </div>
+
+            <div>
+              <label for="fatPerKg">脂肪（g / kg 体重）</label>
+              <input id="fatPerKg" type="number" min="0.3" max="2.0" step="0.1" value="0.8" />
+              <span class="hint">减脂期不建议过低，常见范围约 0.6-1.0 g/kg。</span>
+            </div>
+
+            <div>
+              <label for="minCalories">最低安全摄入提醒线（kcal）</label>
+              <input id="minCalories" type="number" min="800" max="3000" step="10" value="1200" />
+              <span class="hint">仅作提醒用途，不代替医疗或营养建议。</span>
+            </div>
+          </div>
+
+          <div class="btns">
+            <button class="primary" id="calcBtn">开始计算</button>
+            <button class="secondary" id="resetBtn" type="button">恢复默认</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <h2>计算结果</h2>
+          <p>结果会同步显示基础代谢、全天消耗、目标摄入量，以及按当前设定推导出的三大营养素。</p>
+        </div>
+        <div class="card-body">
+          <div class="results">
+            <div class="metric">
+              <div class="k">基础代谢 BMR</div>
+              <div class="v"><span id="bmr">0</span><span class="u">kcal</span></div>
+            </div>
+
+            <div class="metric">
+              <div class="k">全天总消耗 TDEE</div>
+              <div class="v"><span id="tdee">0</span><span class="u">kcal</span></div>
+            </div>
+
+            <div class="metric">
+              <div class="k">目标每日摄入量</div>
+              <div class="v"><span id="targetCalories">0</span><span class="u">kcal</span></div>
+            </div>
+
+            <div class="metric">
+              <div class="k">三大营养素建议</div>
+              <div class="macro-box">
+                <div class="macro-row">
+                  <div class="macro-top">
+                    <div class="macro-name">蛋白质</div>
+                    <div class="macro-val"><span id="proteinG">0</span> g / <span id="proteinKcal">0</span> kcal</div>
+                  </div>
+                  <div class="bar"><div class="fill" id="proteinBar"></div></div>
+                </div>
+
+                <div class="macro-row">
+                  <div class="macro-top">
+                    <div class="macro-name">脂肪</div>
+                    <div class="macro-val"><span id="fatG">0</span> g / <span id="fatKcal">0</span> kcal</div>
+                  </div>
+                  <div class="bar"><div class="fill" id="fatBar"></div></div>
+                </div>
+
+                <div class="macro-row">
+                  <div class="macro-top">
+                    <div class="macro-name">碳水</div>
+                    <div class="macro-val"><span id="carbG">0</span> g / <span id="carbKcal">0</span> kcal</div>
+                  </div>
+                  <div class="bar"><div class="fill" id="carbBar"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="formula" id="formulaText">
+            公式说明：男性 BMR = 10×体重 + 6.25×身高 - 5×年龄 + 5；女性 BMR = 10×体重 + 6.25×身高 - 5×年龄 - 161。TDEE = BMR × 运动系数。目标摄入量 = TDEE - 热量缺口。蛋白质按 4 kcal/g，碳水按 4 kcal/g，脂肪按 9 kcal/g 计算。
+          </div>
+
+          <div class="warn" id="warnBox"></div>
+
+          <div class="foot">
+            本工具用于一般性估算。保存功能使用浏览器本地存储，若你换浏览器、清除站点数据，保存档案可能会消失。
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'fatloss_calculator_profiles_v2';
+    const LAST_PROFILE_KEY = 'fatloss_calculator_last_profile_v2';
+
+    const els = {
+      profileName: document.getElementById('profileName'),
+      profilePicker: document.getElementById('profilePicker'),
+      saveProfileBtn: document.getElementById('saveProfileBtn'),
+      loadProfileBtn: document.getElementById('loadProfileBtn'),
+      newProfileBtn: document.getElementById('newProfileBtn'),
+      deleteProfileBtn: document.getElementById('deleteProfileBtn'),
+      currentProfileBadge: document.getElementById('currentProfileBadge'),
+      savedList: document.getElementById('savedList'),
+      emptyState: document.getElementById('emptyState'),
+      toastBox: document.getElementById('toastBox'),
+      gender: document.getElementById('gender'),
+      age: document.getElementById('age'),
+      height: document.getElementById('height'),
+      weight: document.getElementById('weight'),
+      activity: document.getElementById('activity'),
+      deficit: document.getElementById('deficit'),
+      proteinPerKg: document.getElementById('proteinPerKg'),
+      fatPerKg: document.getElementById('fatPerKg'),
+      minCalories: document.getElementById('minCalories'),
+      bmr: document.getElementById('bmr'),
+      tdee: document.getElementById('tdee'),
+      targetCalories: document.getElementById('targetCalories'),
+      proteinG: document.getElementById('proteinG'),
+      proteinKcal: document.getElementById('proteinKcal'),
+      fatG: document.getElementById('fatG'),
+      fatKcal: document.getElementById('fatKcal'),
+      carbG: document.getElementById('carbG'),
+      carbKcal: document.getElementById('carbKcal'),
+      proteinBar: document.getElementById('proteinBar'),
+      fatBar: document.getElementById('fatBar'),
+      carbBar: document.getElementById('carbBar'),
+      warnBox: document.getElementById('warnBox'),
+      calcBtn: document.getElementById('calcBtn'),
+      resetBtn: document.getElementById('resetBtn')
+    };
+
+    const defaults = {
+      gender: 'male',
+      age: 25,
+      height: 175,
+      weight: 70,
+      activity: 1.55,
+      deficit: 500,
+      proteinPerKg: 2.0,
+      fatPerKg: 0.8,
+      minCalories: 1200
+    };
+
+    let currentProfileName = '';
+    let toastTimer = null;
+
+    function num(v) {
+      const n = parseFloat(v);
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function round(value, digits = 0) {
+      const m = Math.pow(10, digits);
+      return Math.round(value * m) / m;
+    }
+
+    function setBar(el, pct) {
+      el.style.width = Math.max(0, Math.min(100, pct)) + '%';
+    }
+
+    function getFormData() {
+      return {
+        gender: els.gender.value,
+        age: num(els.age.value),
+        height: num(els.height.value),
+        weight: num(els.weight.value),
+        activity: num(els.activity.value),
+        deficit: num(els.deficit.value),
+        proteinPerKg: num(els.proteinPerKg.value),
+        fatPerKg: num(els.fatPerKg.value),
+        minCalories: num(els.minCalories.value)
+      };
+    }
+
+    function applyFormData(data) {
+      els.gender.value = data.gender ?? defaults.gender;
+      els.age.value = data.age ?? defaults.age;
+      els.height.value = data.height ?? defaults.height;
+      els.weight.value = data.weight ?? defaults.weight;
+      els.activity.value = String(data.activity ?? defaults.activity);
+      els.deficit.value = data.deficit ?? defaults.deficit;
+      els.proteinPerKg.value = data.proteinPerKg ?? defaults.proteinPerKg;
+      els.fatPerKg.value = data.fatPerKg ?? defaults.fatPerKg;
+      els.minCalories.value = data.minCalories ?? defaults.minCalories;
+      calculate();
+    }
+
+    function loadProfiles() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        const parsed = raw ? JSON.parse(raw) : {};
+        return parsed && typeof parsed === 'object' ? parsed : {};
+      } catch (err) {
+        return {};
+      }
+    }
+
+    function saveProfiles(profiles) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(profiles));
+    }
+
+    function formatDate(ts) {
+      if (!ts) return '未记录时间';
+      const d = new Date(ts);
+      const pad = n => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    }
+
+    function showToast(message) {
+      clearTimeout(toastTimer);
+      els.toastBox.textContent = message;
+      els.toastBox.style.display = 'block';
+      toastTimer = setTimeout(() => {
+        els.toastBox.style.display = 'none';
+      }, 2200);
+    }
+
+    function updateCurrentProfileBadge() {
+      els.currentProfileBadge.textContent = currentProfileName
+        ? `当前绑定档案：${currentProfileName}`
+        : '当前未绑定任何已保存档案';
+    }
+
+    function renderProfiles() {
+      const profiles = loadProfiles();
+      const names = Object.keys(profiles).sort((a, b) => {
+        const ta = profiles[a]?.updatedAt || 0;
+        const tb = profiles[b]?.updatedAt || 0;
+        return tb - ta;
+      });
+
+      els.profilePicker.innerHTML = '<option value="">请选择已保存档案</option>';
+      names.forEach(name => {
+        const option = document.createElement('option');
+        option.value = name;
+        option.textContent = name;
+        els.profilePicker.appendChild(option);
+      });
+
+      els.savedList.innerHTML = '';
+      if (names.length === 0) {
+        els.emptyState.style.display = 'block';
+      } else {
+        els.emptyState.style.display = 'none';
+      }
+
+      names.forEach(name => {
+        const item = profiles[name];
+        const row = document.createElement('div');
+        row.className = 'saved-item';
+        row.innerHTML = `
+          <div class="saved-item-main">
+            <div class="saved-item-name">${escapeHtml(name)}</div>
+            <div class="saved-item-meta">
+              ${item.data.gender === 'male' ? '男' : '女'} / ${round(item.data.age)}岁 / ${round(item.data.height, 1)}cm / ${round(item.data.weight, 1)}kg<br>
+              最近更新：${formatDate(item.updatedAt)}
+            </div>
+          </div>
+          <div class="saved-item-actions">
+            <button class="secondary small-btn" data-action="load" data-name="${escapeAttr(name)}">载入</button>
+            <button class="ghost small-btn" data-action="rename-fill" data-name="${escapeAttr(name)}">填入名称</button>
+            <button class="danger small-btn" data-action="delete" data-name="${escapeAttr(name)}">删除</button>
+          </div>
+        `;
+        els.savedList.appendChild(row);
+      });
+
+      if (currentProfileName && profiles[currentProfileName]) {
+        els.profilePicker.value = currentProfileName;
+      } else if (currentProfileName && !profiles[currentProfileName]) {
+        currentProfileName = '';
+        localStorage.removeItem(LAST_PROFILE_KEY);
+      }
+
+      updateCurrentProfileBadge();
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function escapeAttr(str) {
+      return escapeHtml(str);
+    }
+
+    function normalizeName(name) {
+      return String(name || '').trim();
+    }
+
+    function saveCurrentProfile() {
+      const name = normalizeName(els.profileName.value);
+      if (!name) {
+        showWarning('请先输入档案名称，例如“曹”。');
+        return;
+      }
+
+      const profiles = loadProfiles();
+      profiles[name] = {
+        data: getFormData(),
+        updatedAt: Date.now()
+      };
+      saveProfiles(profiles);
+      currentProfileName = name;
+      localStorage.setItem(LAST_PROFILE_KEY, name);
+      els.profilePicker.value = name;
+      renderProfiles();
+      hideWarning();
+      showToast(`档案“${name}”已保存。再次保存同名档案时会自动更新。`);
+    }
+
+    function loadProfileByName(name) {
+      const target = normalizeName(name || els.profilePicker.value);
+      if (!target) {
+        showWarning('请先选择一个已保存档案。');
+        return;
+      }
+      const profiles = loadProfiles();
+      const profile = profiles[target];
+      if (!profile) {
+        showWarning(`未找到档案“${target}”。可能已被删除。`);
+        renderProfiles();
+        return;
+      }
+
+      applyFormData(profile.data);
+      currentProfileName = target;
+      localStorage.setItem(LAST_PROFILE_KEY, target);
+      els.profileName.value = target;
+      els.profilePicker.value = target;
+      updateCurrentProfileBadge();
+      hideWarning();
+      showToast(`已载入档案“${target}”。你现在可以继续修改并再次保存。`);
+    }
+
+    function deleteProfileByName(name) {
+      const target = normalizeName(name || els.profilePicker.value);
+      if (!target) {
+        showWarning('请先选择或指定要删除的档案。');
+        return;
+      }
+
+      const profiles = loadProfiles();
+      if (!profiles[target]) {
+        showWarning(`未找到档案“${target}”。`);
+        renderProfiles();
+        return;
+      }
+
+      const ok = window.confirm(`确定删除档案“${target}”吗？删除后将无法恢复。`);
+      if (!ok) return;
+
+      delete profiles[target];
+      saveProfiles(profiles);
+      if (currentProfileName === target) {
+        currentProfileName = '';
+        localStorage.removeItem(LAST_PROFILE_KEY);
+      }
+      if (normalizeName(els.profileName.value) === target) {
+        els.profileName.value = '';
+      }
+      els.profilePicker.value = '';
+      renderProfiles();
+      hideWarning();
+      showToast(`档案“${target}”已删除。`);
+    }
+
+    function newBlankProfile() {
+      currentProfileName = '';
+      localStorage.removeItem(LAST_PROFILE_KEY);
+      els.profileName.value = '';
+      els.profilePicker.value = '';
+      resetAll(false);
+      updateCurrentProfileBadge();
+      showToast('已切换为新建状态。你可以填入新的数据并另存为新档案。');
+    }
+
+    function calculate() {
+      const gender = els.gender.value;
+      const age = num(els.age.value);
+      const height = num(els.height.value);
+      const weight = num(els.weight.value);
+      const activity = num(els.activity.value);
+      const deficit = num(els.deficit.value);
+      const proteinPerKg = num(els.proteinPerKg.value);
+      const fatPerKg = num(els.fatPerKg.value);
+      const minCalories = num(els.minCalories.value);
+
+      if (!age || !height || !weight || !activity) {
+        showWarning('请先完整填写年龄、身高、体重和运动系数。');
+        return;
+      }
+
+      const bmr = gender === 'male'
+        ? (10 * weight + 6.25 * height - 5 * age + 5)
+        : (10 * weight + 6.25 * height - 5 * age - 161);
+
+      const tdee = bmr * activity;
+      const targetCalories = tdee - deficit;
+
+      const proteinG = weight * proteinPerKg;
+      const fatG = weight * fatPerKg;
+      const proteinKcal = proteinG * 4;
+      const fatKcal = fatG * 9;
+      const remainingKcal = targetCalories - proteinKcal - fatKcal;
+      const carbG = remainingKcal / 4;
+      const carbKcal = carbG * 4;
+
+      let warnings = [];
+      if (targetCalories < minCalories) {
+        warnings.push(`目标摄入量 ${round(targetCalories)} kcal 已低于你设置的提醒线 ${round(minCalories)} kcal。`);
+      }
+      if (remainingKcal < 0) {
+        warnings.push('在当前蛋白质和脂肪设定下，目标摄入量已经不够分配给碳水。请降低热量缺口，或下调蛋白质/脂肪设定。');
+      }
+      if (deficit > tdee * 0.3) {
+        warnings.push('当前热量缺口已超过 TDEE 的 30%，对多数人来说偏激进。');
+      }
+
+      els.bmr.textContent = round(bmr);
+      els.tdee.textContent = round(tdee);
+      els.targetCalories.textContent = round(targetCalories);
+
+      els.proteinG.textContent = round(proteinG, 1);
+      els.proteinKcal.textContent = round(proteinKcal);
+      els.fatG.textContent = round(fatG, 1);
+      els.fatKcal.textContent = round(fatKcal);
+      els.carbG.textContent = round(Math.max(0, carbG), 1);
+      els.carbKcal.textContent = round(Math.max(0, carbKcal));
+
+      const safeTarget = Math.max(targetCalories, 1);
+      setBar(els.proteinBar, proteinKcal / safeTarget * 100);
+      setBar(els.fatBar, fatKcal / safeTarget * 100);
+      setBar(els.carbBar, Math.max(0, carbKcal) / safeTarget * 100);
+
+      if (warnings.length > 0) {
+        showWarning(warnings.join('<br>'));
+      } else {
+        hideWarning();
+      }
+    }
+
+    function showWarning(html) {
+      els.warnBox.innerHTML = html;
+      els.warnBox.style.display = 'block';
+    }
+
+    function hideWarning() {
+      els.warnBox.style.display = 'none';
+      els.warnBox.innerHTML = '';
+    }
+
+    function resetAll(showMsg = true) {
+      applyFormData(defaults);
+      if (showMsg) showToast('已恢复默认参数。');
+    }
+
+    function init() {
+      const lastProfile = normalizeName(localStorage.getItem(LAST_PROFILE_KEY) || '');
+      renderProfiles();
+
+      const profiles = loadProfiles();
+      if (lastProfile && profiles[lastProfile]) {
+        loadProfileByName(lastProfile);
+      } else {
+        applyFormData(defaults);
+      }
+    }
+
+    els.calcBtn.addEventListener('click', calculate);
+    els.resetBtn.addEventListener('click', () => resetAll(true));
+    els.saveProfileBtn.addEventListener('click', saveCurrentProfile);
+    els.loadProfileBtn.addEventListener('click', () => loadProfileByName());
+    els.newProfileBtn.addEventListener('click', newBlankProfile);
+    els.deleteProfileBtn.addEventListener('click', () => deleteProfileByName());
+
+    els.profilePicker.addEventListener('change', () => {
+      const name = normalizeName(els.profilePicker.value);
+      if (name) {
+        els.profileName.value = name;
+      }
+    });
+
+    els.savedList.addEventListener('click', (event) => {
+      const btn = event.target.closest('button[data-action]');
+      if (!btn) return;
+      const action = btn.dataset.action;
+      const name = btn.dataset.name || '';
+      if (action === 'load') loadProfileByName(name);
+      if (action === 'delete') deleteProfileByName(name);
+      if (action === 'rename-fill') {
+        els.profileName.value = name;
+        els.profilePicker.value = name;
+        showToast(`已将档案名称“${name}”填入输入框。`);
+      }
+    });
+
+    [
+      els.gender, els.age, els.height, els.weight, els.activity,
+      els.deficit, els.proteinPerKg, els.fatPerKg, els.minCalories
+    ].forEach(el => {
+      el.addEventListener('input', calculate);
+      el.addEventListener('change', calculate);
+    });
+
+    init();
+  </script>
+</body>
+</html>
